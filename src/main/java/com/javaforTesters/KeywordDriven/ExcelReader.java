@@ -35,7 +35,7 @@ public class ExcelReader {
 			Cell cell;
 			for (int i = 0; i < colCnt; i++) {
 				cols[i] = new ArrayList<String>();
-				for (int j = 0; j < rowCnt; j++) {
+				for (int j = 0; j <= rowCnt; j++) {
 					cell = sh.getRow(j).getCell(i);
 					cols[i].add(cell.getStringCellValue());
 				}

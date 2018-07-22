@@ -25,29 +25,30 @@ public class TestCase extends TestSuite {
 		System.out.println(Class.forName("java.util.ArrayList"));
 		sRow.set(1);
 		int eRow = data.get().get(2).size();
-		execute(sRow.get(), eRow, data.get(), driver.get());
+		execute(eRow, data.get(), driver.get());
 
 	}
 
-	public static void execute(int sRow, int eRow, List<List<String>> data, WebDriver driver) throws Exception {
-		while (eRow > sRow) {
+	public static void execute(int eRow, List<List<String>> data, WebDriver driver) throws Exception {
+		while (eRow > sRow.get()) {
 			List<Object> myParamList = new ArrayList<Object>();
 			List<String> locatorType = data.get(0);
 			List<String> locatorValue = data.get(1);
 			List<String> action = data.get(2);
 			List<String> params = data.get(3);
 			myParamList.add(driver);
-			myParamList.add(locatorType.get(sRow));
-			myParamList.add(locatorValue.get(sRow));
-			myParamList.add(params.get(sRow));
-			if (action.get(sRow).equals("StartDataTable"))
+			myParamList.add(locatorType.get(sRow.get()));
+			myParamList.add(locatorValue.get(sRow.get()));
+			myParamList.add(params.get(sRow.get()));
+			if (action.get(sRow.get()).equals("StartDataTable") || action.get(sRow.get()).equals("IfTrue"))
 				myParamList.add(data);
 			myParamList.removeIf(o -> o.equals(""));
 			Object[] paramListObject = new Object[myParamList.size()];
 			paramListObject = myParamList.toArray(paramListObject);
 			keywordfeeder keywordexec = new keywordfeeder();
-			keywordexec.keywordinvoker("Keywords.Keywords", action.get(sRow), paramListObject);
-			sRow++;
+			System.out.println(action.get(sRow.get()));
+			keywordexec.keywordinvoker("Keywords.Keywords", action.get(sRow.get()), paramListObject);
+			sRow.set(sRow.get() + 1);
 		}
 	}
 

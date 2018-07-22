@@ -5,6 +5,7 @@ import static org.testng.Assert.assertEquals;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -49,33 +50,58 @@ public class Keywords {
 		assertEquals(driver.findElement(by).isSelected(), true);
 	}
 
+	public void IfTrue(WebDriver driver, String condtion, List<List<String>> data) {
+		String[] c = condtion.split("==");
+		int sRow = TestCase.sRow.get();
+		if (!c[0].equals(c[1])) {
+			List<String> action = data.get(2);
+			sRow = action.subList(sRow, action.size()).indexOf("EndIf") + sRow;
+			TestCase.sRow.set(sRow);
+		}
+	}
+
+	public void EndIf() {
+		System.out.println("End of If Statment");
+	}
+
 	public void StartDataTable(WebDriver driver, String path, List<List<String>> data)
 			throws Exception, InvalidFormatException {
 		List<List<String>> testdata = ExcelReader.readExcel(path);
 		int tdsize = testdata.get(0).size();
-		int sRow = TestCase.sRow.get() + 1;
-		int eRow = data.get(2).subList(sRow, data.get(2).size()).indexOf("EndDataTable");
-		if (eRow == -1)
-			eRow = data.get(2).size() - 1;
-		for (int i = 1; i <= tdsize; i++) {
+		int sRow = TestCase.sRow.get();
+
+		for (int i = 1; i < tdsize; i++) {
+			TestCase.sRow.set(sRow + 1);
+			int eRow = data.get(2).subList(sRow, data.get(2).size()).indexOf("EndDataTable") + sRow;
 			List<List<String>> temp = new ArrayList<List<String>>(data);
 			List<String> params = new ArrayList<String>(temp.get(3));
 			params = getParameter(params, testdata, i);
 			temp.set(3, params);
-			TestCase.execute(sRow, eRow, temp, driver);
+			TestCase.execute(eRow, temp, driver);
 		}
-		TestCase.sRow.set(eRow - 1);
+		// TestCase.sRow.set(sRow + eRow);
 	}
+
+	/*
+	 * private List<List<String>> getSubList(List<List<String>> data, int sRow)
+	 * { List<String>[] cols = new ArrayList[data.size()]; List<List<String>>
+	 * temp = new ArrayList<List<String>>(); for (int i = 0; i < data.size();
+	 * i++) { cols[i] = new ArrayList<String>(); for (int j = sRow; j <
+	 * data.get(i).size(); j++) {
+	 * 
+	 * cols[i].add(data.get(i).get(j)); } temp.add(cols[i]); } return temp; }
+	 */
 
 	private List<String> getParameter(List<String> params, List<List<String>> testdata, int r) {
 		for (int i = 0; i < params.size(); i++) {
 			if (params.get(i).contains("DataTable")) {
-				String userName = params.get(i).substring("DataTable".length() + 1);
+				String p = params.get(i).replaceAll("(^\\$\\(\\w+.)|(\\)).*", "");
 				// search the element in the testdata
 				for (List<String> td : testdata) {
-					if (td.contains(userName)) {
+					if (td.contains(p)) {
 						int c = testdata.indexOf(td);
-						params.set(i, testdata.get(c).get(r));
+						String temp = params.get(i).replaceAll("^[\\$].*\\)", testdata.get(c).get(r));
+						params.set(i, temp);
 					}
 				}
 
